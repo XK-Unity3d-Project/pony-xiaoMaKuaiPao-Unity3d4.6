@@ -8,27 +8,25 @@ public class CameraSmooth : MonoBehaviour
 	public Transform[] ShootPos;
 	public PlayerShoot m_Shoot;
 
-	void Start () 
-	{
-
-	}
-
+	public float FallowSpeedPos = 5f;
+	public float FallowSpeedRot = 4f;
 	void LateUpdate () 
 	{
 		if (!target)
 				return;
-		if(Input.GetKeyDown(KeyCode.F1))
-		{
-			IsNormal = false;
-		}
-		if(Input.GetKeyDown(KeyCode.F2))
-		{
-			IsNormal = true;
-		}
+//		if(Input.GetKeyDown(KeyCode.F1))
+//		{
+//			IsNormal = false;
+//		}
+//		if(Input.GetKeyDown(KeyCode.F2))
+//		{
+//			IsNormal = true;
+//		}
 		if(IsNormal)
 		{
-			transform.position = Vector3.Lerp(transform.position,target.position - target.forward*6.0f+target.up*5.0f,5.0f*Time.deltaTime);
-			transform.LookAt (target.position + target.forward*10.0f);
+			transform.position = Vector3.Lerp(transform.position,target.position - target.forward*6.0f+target.up*5.0f,FallowSpeedPos*Time.deltaTime);
+			Vector3 forwardVal = (target.position + target.forward*10.0f) - transform.position;
+			transform.forward = Vector3.Lerp(transform.forward, forwardVal.normalized, FallowSpeedRot*Time.deltaTime);
 			m_Shoot.shootPointObj.position = ShootPos[0].position;
 		}
 		else

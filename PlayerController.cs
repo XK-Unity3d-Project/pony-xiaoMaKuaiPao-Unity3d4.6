@@ -165,6 +165,7 @@ public class PlayerController : MonoBehaviour
 	}
 	void Update () 
 	{
+		CheckPlayerIsIntoZhangAi();
 		myPlayer = transform;
 		m_Xiaonvhai.localPosition = new Vector3 (0.0f,0.0f,0.4990992f);
 		m_Xiaonvhai.localEulerAngles = new Vector3(0.0f,0.0f,0.0f);
@@ -632,5 +633,34 @@ public class PlayerController : MonoBehaviour
 			m_ShootPoint.z = 0.0f;
 		}
 		//Vector3 ScreenPoint = new Vector3(Input.mousePosition.x - Screen.width/2.0f,Input.mousePosition.y-Screen.height/2.0f,0.0f);
+	}
+
+	void CheckPlayerIsIntoZhangAi()
+	{
+		if (!IsEnterZhangai) {
+			return;
+		}
+
+		if (Time.frameCount % 25 != 0) {
+			return;
+		}
+
+		Transform pathPoint = Path.GetChild(PathNum);
+		Vector3 vecA = pathPoint.right;
+		Vector3 vecB = myPlayer.position - pathPoint.position;
+		vecA.y = vecB.y = 0f;
+		float speedRot = 5f;
+		float speedMv = 5f * Time.deltaTime;
+		if (Vector3.Dot(vecA, vecB) > 0) {
+			//Debug.Log("make player turn right!");
+			myPlayer.Rotate(new Vector3(0f, speedRot, 0f));
+			myPlayer.position += (myPlayer.right * speedMv);
+		}
+		
+		if (Vector3.Dot(vecA, vecB) < 0) {
+			//Debug.Log("make player turn left!");
+			myPlayer.Rotate(new Vector3(0f, -speedRot, 0f));
+			myPlayer.position -= (myPlayer.right * speedMv);
+		}
 	}
 }
