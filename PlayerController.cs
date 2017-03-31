@@ -166,7 +166,7 @@ public class PlayerController : MonoBehaviour
 	void Update () 
 	{
 		CheckPlayerOutPath();
-		CheckPathTimeVal();
+		//CheckPathTimeVal();
 		CheckPlayerIsIntoZhangAi();
 		myPlayer = transform;
 		m_Xiaonvhai.localPosition = new Vector3 (0.0f,0.0f,0.4990992f);
@@ -739,7 +739,8 @@ public class PlayerController : MonoBehaviour
 		float lenC = vecC.magnitude;
 		float lenB = vecB.magnitude;
 		float lenA = vecA.magnitude;
-		if (lenA < 15f || lenC < 15f) {
+		float disVal = 20f;
+		if (lenA < disVal || lenC < disVal) {
 			IsOut = false;
 			OutroadWarning.SetActive(false);
 			OutTimmer = 0.0f;
