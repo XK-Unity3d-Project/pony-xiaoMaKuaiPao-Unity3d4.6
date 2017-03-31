@@ -165,6 +165,8 @@ public class PlayerController : MonoBehaviour
 	}
 	void Update () 
 	{
+		CheckPlayerOutPath();
+		CheckPathTimeVal();
 		CheckPlayerIsIntoZhangAi();
 		myPlayer = transform;
 		m_Xiaonvhai.localPosition = new Vector3 (0.0f,0.0f,0.4990992f);
@@ -282,6 +284,14 @@ public class PlayerController : MonoBehaviour
 //			PathNum = Convert.ToInt32(other.gameObject.name)-1;
 //			Debug.Log("PathNum" + PathNum);
 			PathNum  = Convert.ToInt32(other.gameObject.name)-1;
+			if(PathNum < PathPoint.Length-1)
+			{
+				NextPathNum = PathNum + 1;
+			}
+			else
+			{
+				NextPathNum = 0;
+			}
 //			if(PathNum < num )
 //			{
 //				PathNum = num;
@@ -305,6 +315,7 @@ public class PlayerController : MonoBehaviour
 					}
 				}
 			}
+			TimePathVal = Time.time;
 		}
 		 if(other.tag == "creatpoint")
 		{
@@ -407,11 +418,15 @@ public class PlayerController : MonoBehaviour
 				}
 				if(pcvr.GetInstance().getTurnLeft())
 				{
-					transform.Rotate(new Vector3(0.0f,-Myangle*Time.deltaTime,0.0f));				
+					if (PlayerIntoZhangAiSt != 2) {
+						transform.Rotate(new Vector3(0.0f,-Myangle*Time.deltaTime,0.0f));
+					}
 				}
 				if(pcvr.GetInstance().getTurnRight())
 				{
-					transform.Rotate(new Vector3(0.0f,Myangle*Time.deltaTime,0.0f));
+					if (PlayerIntoZhangAiSt != 1) {
+						transform.Rotate(new Vector3(0.0f,Myangle*Time.deltaTime,0.0f));
+					}
 				}
 			}
 			else
@@ -426,11 +441,15 @@ public class PlayerController : MonoBehaviour
 				}
 				if(Input.GetKey(KeyCode.A))
 				{
-					transform.Rotate(new Vector3(0.0f,-Myangle*Time.deltaTime,0.0f));				
+					if (PlayerIntoZhangAiSt != 2) {
+						transform.Rotate(new Vector3(0.0f,-Myangle*Time.deltaTime,0.0f));
+					}
 				}
 				if(Input.GetKey(KeyCode.D))
 				{
-					transform.Rotate(new Vector3(0.0f,Myangle*Time.deltaTime,0.0f));
+					if (PlayerIntoZhangAiSt != 1) {
+						transform.Rotate(new Vector3(0.0f,Myangle*Time.deltaTime,0.0f));
+					}
 				}
 				if(Input.GetKey(KeyCode.X))
 				{
@@ -438,7 +457,10 @@ public class PlayerController : MonoBehaviour
 				}
 			}
 
-			transform.position += transform.forward * speed *Time.deltaTime;
+			if (PlayerIntoZhangAiSt == 0) {
+				transform.position += transform.forward * speed *Time.deltaTime;
+			}
+
 			if(Physics.Raycast(transform.position+Vector3.up*50.0f,-Vector3.up,out hit,100.0f,mask.value))
 			{
 				transform.position = hit.point;
@@ -447,8 +469,11 @@ public class PlayerController : MonoBehaviour
 			CubeForCamera.localEulerAngles = new Vector3(0.0f,transform.localEulerAngles.y,0.0f);
 			CubeForCamera.position = transform.position;
 			xiaoma.localPosition = new Vector3(0.0f,0.0f,2.32f);
-			if(!IsReset)
-				transform.LookAt(cube.transform.position);
+			if(!IsReset) {
+				if (PlayerIntoZhangAiSt == 0) {
+					transform.LookAt(cube.transform.position);
+				}
+			}
 			else
 			{
 				IsReset = false;
@@ -536,13 +561,17 @@ public class PlayerController : MonoBehaviour
 			{
 				if(YangleRecord > 0)
 				{
-					transform.Rotate(new Vector3(0.0f,80.0f*Time.deltaTime,0.0f));
-					YangleTotal+=80.0f*Time.deltaTime;
+					if (PlayerIntoZhangAiSt != 1) {
+						transform.Rotate(new Vector3(0.0f,80.0f*Time.deltaTime,0.0f));
+						YangleTotal+=80.0f*Time.deltaTime;
+					}
 				}
 				else
 				{
-					transform.Rotate(new Vector3(0.0f,-80.0f*Time.deltaTime,0.0f));
-					YangleTotal+=-80.0f*Time.deltaTime;
+					if (PlayerIntoZhangAiSt != 2) {
+						transform.Rotate(new Vector3(0.0f,-80.0f*Time.deltaTime,0.0f));
+						YangleTotal+=-80.0f*Time.deltaTime;
+					}
 				}
 				if(Mathf.Abs(YangleTotal)>=Mathf.Abs(YangleRecord))
 				{
@@ -635,9 +664,16 @@ public class PlayerController : MonoBehaviour
 		//Vector3 ScreenPoint = new Vector3(Input.mousePosition.x - Screen.width/2.0f,Input.mousePosition.y-Screen.height/2.0f,0.0f);
 	}
 
+	/**
+	 * IsEnterZhangai == 0  -> 没有碰上障碍.
+	 * IsEnterZhangai == 1  -> 有碰上右边障碍.
+	 * IsEnterZhangai == 2  -> 有碰上左边障碍.
+	 */
+	byte PlayerIntoZhangAiSt = 0;
 	void CheckPlayerIsIntoZhangAi()
 	{
 		if (!IsEnterZhangai) {
+			PlayerIntoZhangAiSt = 0;
 			return;
 		}
 
@@ -655,12 +691,70 @@ public class PlayerController : MonoBehaviour
 			//Debug.Log("make player turn right!");
 			myPlayer.Rotate(new Vector3(0f, speedRot, 0f));
 			myPlayer.position += (myPlayer.right * speedMv);
+			PlayerIntoZhangAiSt = 2;
 		}
 		
 		if (Vector3.Dot(vecA, vecB) < 0) {
 			//Debug.Log("make player turn left!");
 			myPlayer.Rotate(new Vector3(0f, -speedRot, 0f));
 			myPlayer.position -= (myPlayer.right * speedMv);
+			PlayerIntoZhangAiSt = 1;
+		}
+
+		if (PlayerIntoZhangAiSt != 2 && PlayerIntoZhangAiSt != 1) {
+			PlayerIntoZhangAiSt = 0;
+		}
+	}
+
+	float TimePathVal = 0f;
+	void CheckPathTimeVal()
+	{
+		if (Time.frameCount % 20 != 0) {
+			return;
+		}
+
+		if (Time.time - TimePathVal < 15f) {
+			return;
+		}
+		TimePathVal = Time.time;
+		ResetPlayer();
+	}
+
+	void CheckPlayerOutPath()
+	{
+		if (Time.frameCount % 30 != 0) {
+			return;
+		}
+
+		if (PathNum == NextPathNum) {
+			return;
+		}
+		Transform pathPoint = Path.GetChild(PathNum);
+		Transform nextPoint = Path.GetChild(NextPathNum);
+		Vector3 vecA = myPlayer.position - nextPoint.position;
+		Vector3 vecB = nextPoint.position - pathPoint.position;
+		Vector3 vecC = myPlayer.position - pathPoint.position;
+		vecA.y = vecB.y = vecC.y = 0f;
+
+		float lenC = vecC.magnitude;
+		float lenB = vecB.magnitude;
+		float lenA = vecA.magnitude;
+		if (lenA < 15f || lenC < 15f) {
+			IsOut = false;
+			OutroadWarning.SetActive(false);
+			OutTimmer = 0.0f;
+			return;
+		}
+
+		if (lenA > lenB || lenC > lenB) {
+			
+			IsOut = true;
+			OutroadWarning.SetActive(true);
+		}
+		else {
+			IsOut = false;
+			OutroadWarning.SetActive(false);
+			OutTimmer = 0.0f;
 		}
 	}
 }
